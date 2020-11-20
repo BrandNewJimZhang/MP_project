@@ -12,7 +12,7 @@ from IPython import get_ipython
 #
 # ## 任务目标及要求
 #
-# 1. 提供了中英文两个数据集，见资源/ data，分别讨论和分析
+# 1. 提供了中英文两个数据集，见资源 / data，分别讨论和分析
 # 2. 一行一条评论或一条 tweet
 # 3. 一行可以视为一个文档
 # 4. 读入所有文档并分词（中文需要 jieba)
@@ -33,14 +33,12 @@ from IPython import get_ipython
 # %%
 # 引入需要使用的库
 import requests as rs
-import os
 import jieba as jb
 import pandas as pd
 import numpy as np
-from wordcloud import WordCloud as wc
+import wordcloud.WordCloud as wc
 import matplotlib.pyplot as plt
-import re
-import math
+import os, re, math
 from PIL import Image
 
 
@@ -50,20 +48,15 @@ def get_data(url):
     '''
     '''
     head = {
-        'user-agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'
     }
     response = rs.get(url, headers=head)
     return response.text.strip().split('\n')
 
-
 url_list = {
-    'online_reviews_texts':
-    r'https://course.e2.buaa.edu.cn/access/content/group/6095b6c8-3c07-4799-ba79-dc9e5a379db6/data/online_reviews_texts.txt',
-    'stopwords_list':
-    r'https://course.e2.buaa.edu.cn/access/content/group/6095b6c8-3c07-4799-ba79-dc9e5a379db6/data/stopwords_list.txt',
-    'tweets_apple_stock':
-    r'https://course.e2.buaa.edu.cn/access/content/group/6095b6c8-3c07-4799-ba79-dc9e5a379db6/data/tweets_apple_stock.txt'
+    'online_reviews_texts': r'https://course.e2.buaa.edu.cn/access/content/group/6095b6c8-3c07-4799-ba79-dc9e5a379db6/data/online_reviews_texts.txt',
+    'stopwords_list': r'https://course.e2.buaa.edu.cn/access/content/group/6095b6c8-3c07-4799-ba79-dc9e5a379db6/data/stopwords_list.txt',
+    'tweets_apple_stock': r'https://course.e2.buaa.edu.cn/access/content/group/6095b6c8-3c07-4799-ba79-dc9e5a379db6/data/tweets_apple_stock.txt'
 }
 
 ort = get_data(url_list['online_reviews_texts'])
@@ -74,7 +67,7 @@ tas = get_data(url_list['tweets_apple_stock'])
 print(ort[-1], sl[-1], tas[-1], sep='\n\n')
 
 # %% [markdown]
-# 数据的获取部分并没有选择从本地直接读入，而是从网站上爬取，由于均为txt文件，故没有使用bs4等专业的爬虫库，直接用requests抓取源码即可。
+# 数据的获取部分并没有选择从本地直接读入，而是从网站上爬取，由于均为 .txt 文件，故没有使用 bs4 等专业的爬虫库，直接用 requests 抓取源码即可。
 #
 # 当然我也下载文件到了本地，也可以通过文件io进行读取
 #
@@ -160,7 +153,7 @@ print(ort_cut[-100:], tas_cut[-100:], sep='\n\n')
 print(ort_cut_eve[-1], tas_cut_eve[-1], sep='\n\n')
 
 # %% [markdown]
-# 利用jieba库进行分词
+# 利用 jieba 库进行分词
 #
 # 为了后期统计关键词更加精准，分词的时候选择了精确模式
 #
@@ -200,7 +193,7 @@ tas_fre_tf
 # %% [markdown]
 # 首先通过停用词表进行无用词的过滤，我感觉老师给的表对英文停用不是很友好，所以我在网上又找了一个，因此这一部分将停用词表重新读入了。
 #
-# 利用tf方式统计词频，这里的词频并非传统意义的词频，而是该词在文章中的重要程度
+# 利用 tf 方式统计词频，这里的词频并非传统意义的词频，而是该词在文章中的重要程度
 # 我觉得传统词频统计方式并不能展现某个词的重要性，比如‘我’几乎所有文本都会出现，但绝大多数情况下其都不是一个重要的词汇。
 # 为了避免这种现象的出现，我选择使用 tf 算法进行词频统计，结果如图。
 
@@ -254,12 +247,12 @@ tas_fre_tfidf
 #
 # 为了避免非重要的词进入特征集，本文采用 tf-idf 算法来进行特征集的筛选
 #
-# 首先计算所有词的 tf-idf 得分，再选取得分最高的 100 个词作为特征集（本来想选更多的，但无奈算力不足，只好选了100个）
+# 首先计算所有词的 tf-idf 得分，再选取得分最高的 100 个词作为特征集（本来想选更多的，但无奈算力不足，只好选了 100 个）
 
 
 # %%
 # 确定特征集
-# 取tfidf得分最高的前100个词作为特征集
+# 取 tfidf 得分最高的前 100 个词作为特征集
 def select_characteristic(df):
     df = df.sort_values(by='TF-IDF', ascending=False)
     return df.head(100)
@@ -328,7 +321,7 @@ tas_vec
 #
 # 文本转向量 这里使用的算法依然是 tf-idf 算法，词袋是特征集
 #
-# 运行结果是每天评论的向量表示（100维）
+# 运行结果是每天评论的向量表示（100 维）
 
 # %%
 # 计算距离并找到重心
@@ -401,8 +394,8 @@ def show_worldcloud(cut_list, bgp='', to_file=''):
         font_path='C:\Windows\Fonts\STZHONGS.TTF',  # 设置字体
         background_color="white",  # 背景颜色
         max_words=1000,  # 词云显示的最大词数
-        random_state=42,  #随机数
-        collocations=False,  #避免重复单词
+        random_state=42,  # 随机数
+        collocations=False,  # 避免重复单词
         mask=mask,
     ).generate(" ".join(cut_list))
     plt.imshow(wc_, interpolation='bilinear')
